@@ -69,7 +69,9 @@ function createTypeORMEntity(items, entity) {
                 }
 
                 const notation = handleNotation(item.notation);
-                console.log(notation);
+                const length = handleLength(item.notation);
+                console.log(length);
+
 
                 if (index == 0) {
                     return `
@@ -82,7 +84,8 @@ function createTypeORMEntity(items, entity) {
                 @Column({
                     ${notation ? `type: '${notation}',` : ''}
                     nullable: ${optional},
-                    name: '${item.column}'
+                    name: '${item.column}',
+                    ${length ? `length: ${length},` : '' }
                 })
                 ${item.column}: ${type_mapper[item.type] ?? 'any'}
                 `;
@@ -90,6 +93,22 @@ function createTypeORMEntity(items, entity) {
         }
     }
     `
+}
+
+function handleLength(notation) {
+    const unmasked_notation = notation.slice(4, notation.length);
+
+    if(unmasked_notation.length == 0) {
+        return null;
+    }
+
+    if(unmasked_notation.indexOf('(') < 0) {
+        return null;
+    }
+
+    const length = unmasked_notation.slice((unmasked_notation.indexOf('(') + 1), (unmasked_notation.indexOf(')')));
+
+    return length;
 }
 
 function handleNotation(notation) {
@@ -110,6 +129,7 @@ function handleNotation(notation) {
     if(unmasked_notation.length == 0) {
         return notation_mapper[unmasked_notation];
     }
+
     if(unmasked_notation.indexOf('(') < 0) {
         return notation_mapper[unmasked_notation];
     }
